@@ -6,6 +6,11 @@ using Random
 
 export generate_key, encrypt_id, decrypt_id
 
+"""
+    generate_key()
+
+Generate a random AES 128-bit key.
+"""
 function generate_key()
   return AES128Key(rand(UInt8, 16))
 end
@@ -21,6 +26,11 @@ function unpad_pkcs7(data::Vector{UInt8})
   return data[1:end-padding_length]
 end
 
+"""
+    encrypt_id(id::String, key::AES128Key)
+
+Encrypt a single ID string using the provided AES key.
+"""
 function encrypt_id(id::String, key::AES128Key)
   cipher = AESCipher(; key_length=128, mode=AES.CBC, key=key)
   iv = rand(UInt8, 16)
@@ -35,6 +45,11 @@ function encrypt_id(id::String, key::AES128Key)
   return bytes2hex(vcat(iv, encrypted_data))
 end
 
+"""
+    decrypt_id(encrypted_id::String, key::AES128Key)
+
+Decrypt an encrypted ID string using the provided AES key.
+"""
 function decrypt_id(encrypted_id::String, key::AES128Key)
   cipher = AESCipher(; key_length=128, mode=AES.CBC, key=key)
   encrypted_data = hex2bytes(encrypted_id)
