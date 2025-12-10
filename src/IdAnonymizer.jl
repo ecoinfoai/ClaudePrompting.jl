@@ -5,6 +5,7 @@ using Random
 using SHA
 
 export anonymize_ids, deanonymize_ids
+export compress_ids, restore_ids
 
 """
     anonymize_ids(
