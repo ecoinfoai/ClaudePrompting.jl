@@ -6,22 +6,35 @@ using AES
 using OrderedCollections
 
 import ClaudePrompting.IdCipher as IC
+import ClaudePrompting.IdAnonymizer as IA
 export encrypt_input_data, df_to_yml, check_incomplete_responses,
-       check_duplicate_anonymous_ids
+       check_duplicate_anonymous_ids, compress_input_data
 
 function encrypt_input_data(df::DataFrame, ids_vec::Vector{String}, key::AES.AES128Key)
-  encrypted_ids = [IC.encrypt_id(id, key) for id in ids_vec]
+  encrypted_ids = IC.encrypt_ids(ids_vec, key)
   encrypted_df = copy(df)
   encrypted_df[!, :IDs] = encrypted_ids
 
   return encrypted_df
 end
 
-function df_to_yml(df::DataFrame, key_order::Vector{Symbol})::Vector{Any}
-  yml_data = []
-  for row in eachrow(df)
-    ordered_dict = OrderedDict(key => row[key] for key in key_order)
-    push!(yml_data, ordered_dict)
+"""
+    compress_input_data(df::DataFrame; id_col::Symbol=:IDs)
+
+Compresses the input DataFrame by mapping potentially long encrypted IDs to short
+sequential IDs using IdAnonymizer.compress_ids. Returns the compressed DataFrame
+and the mapping for later restoration.
+"""
+function compress_input_data(df::DataFrame; id_col::Symbol=:IDs)
+  return IA.compress_ids(df, id_col=id_col)
+end
+
+
+function df_to_yml(df::DataFrame, key_order::Vector{Symbol})::Vector{OrderedDict{Symbol, Any}}
+  yml_data = Vector{OrderedDict{Symbol, Any}}(undef, nrow(df))
+  for (i, row) in enumerate(eachrow(df))
+    ordered_dict = OrderedDict{Symbol, Any}(key => row[key] for key in key_order)
+    yml_data[i] = ordered_dict
   end
   return yml_data
 end

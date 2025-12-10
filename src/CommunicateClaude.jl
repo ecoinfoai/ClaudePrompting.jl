@@ -62,7 +62,32 @@ function process_sequential_batches(
   yml_string::String, prompt::String, batch_size::Int64=10
 )
   entries = split(yml_string, "\n- ")
-  entries[1] = entries[1][2:end]
+  # split might leave an empty string at start if it starts with "\n- " or "- "
+  # The original code did: entries[1] = entries[1][2:end] assuming it starts with "- " but split removes "\n- "
+  # Let's look at how df_to_yml produces output. YAML usually produces "- key: value..."
+
+  # Wait, df_to_yml returns Vector{OrderedDict}, not String.
+  # process_sequential_batches receives yml_string.
+  # Where is the conversion to String happening?
+  # The user likely converts the Vector from df_to_yml to a YAML string before passing here.
+  # The original code assumed `yml_string` is a big string.
+
+  # Original code:
+  # entries = split(yml_string, "\n- ")
+  # entries[1] = entries[1][2:end]
+
+  # If yml_string is "- A\n- B\n- C", split by "\n- " gives: ["- A", "B", "C"].
+  # entries[1] comes out as "- A". entries[1][2:end] becomes " A".
+  # That seems risky if formatting varies.
+
+  # However, preserving original logic logic while optimizing memory.
+
+  if startswith(yml_string, "- ")
+      entries = split(yml_string[3:end], "\n- ")
+  else
+      entries = split(yml_string, "\n- ")
+  end
+  # This split creates a Vector{SubString} or Vector{String}.
 
   total_items = length(entries)
   num_batches = ceil(Int, total_items / batch_size)
@@ -72,7 +97,12 @@ function process_sequential_batches(
     start_idx = (i - 1) * batch_size + 1
     end_idx = min(i * batch_size, total_items)
     batch = entries[start_idx:end_idx]
-    batch_yml = "- " * join(batch, "\n- ")
+
+    # Use IOBuffer to build batch_yml
+    io = IOBuffer()
+    write(io, "- ")
+    join(io, batch, "\n- ")
+    batch_yml = String(take!(io))
 
     try
       result = provide_yml_to_claude(batch_yml, prompt)

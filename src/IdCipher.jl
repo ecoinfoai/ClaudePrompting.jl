@@ -4,7 +4,7 @@ using YAML
 using AES
 using Random
 
-export generate_key, encrypt_id, decrypt_id
+export generate_key, encrypt_id, decrypt_id, encrypt_ids
 
 function generate_key()
   return AES128Key(rand(UInt8, 16))
@@ -33,6 +33,26 @@ function encrypt_id(id::String, key::AES128Key)
     encrypted_data = encrypted
   end
   return bytes2hex(vcat(iv, encrypted_data))
+end
+
+function encrypt_ids(ids::Vector{String}, key::AES128Key)
+  cipher = AESCipher(; key_length=128, mode=AES.CBC, key=key)
+  encrypted_ids = Vector{String}(undef, length(ids))
+
+  for (i, id) in enumerate(ids)
+    iv = rand(UInt8, 16)
+    id_bytes = Vector{UInt8}(id)
+    padded_id = pad_pkcs7(id_bytes, 16)
+    encrypted = encrypt(padded_id, cipher, iv)
+    if encrypted isa AES.CipherText
+      encrypted_data = encrypted.data
+    else
+      encrypted_data = encrypted
+    end
+    encrypted_ids[i] = bytes2hex(vcat(iv, encrypted_data))
+  end
+
+  return encrypted_ids
 end
 
 function decrypt_id(encrypted_id::String, key::AES128Key)
