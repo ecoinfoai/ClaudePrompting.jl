@@ -17,7 +17,7 @@ import ClaudePrompting.PrepareData as PD
   ids_vec = string.(df[!, :IDs])
 
   key = IC.generate_key()
-  encrypted_df = PD.encrypt_input_data(df, ids_vec, key)
+  encrypted_df = PD.encrypt_input_data(df, key)
   @test length(encrypted_df[!, :IDs]) == 2
 
   encrypted_ids = encrypted_df[!, :IDs] 
@@ -29,7 +29,7 @@ end
   @testset "Functionality test" begin 
     df1 = DataFrame(A = [1, 2], B = ["x", "y"]) 
     key_order1 = [:A, :B]
-    res = PD.df_to_yml(df1, key_order1)
+    res = PD.df_to_ordered_dicts(df1, key_order1)
     @test collect(keys(res[1])) == [:A, :B]
     @test res[1][:A] == 1
   end
@@ -42,7 +42,7 @@ end
       Bool = [true]
     )
     key_order2 = [:Int, :Float, :String, :Date, :Bool]
-    res2 = PD.df_to_yml(df2, key_order2)
+    res2 = PD.df_to_ordered_dicts(df2, key_order2)
     @test res2[1][:Int] isa Int 
     @test res2[1][:Float] isa Float64 
     @test res2[1][:String] isa String 
@@ -51,14 +51,14 @@ end
   end
   @testset "Empty DataFrame processing test" begin
     df_empty = DataFrame(A = Int[], B = String[])
-    res_empty = PD.df_to_yml(df_empty, [:A, :B])
+    res_empty = PD.df_to_ordered_dicts(df_empty, [:A, :B])
     @test isempty(res_empty)
   end
   @testset "Large Data Performance" begin
     large_df = DataFrame(
       A = 1:10000, B = rand(10000), C = ['a':'z'...][rand(1:26, 10000)]
     )
-    @time result_large = PD.df_to_yml(large_df, [:A, :B, :C])
+    @time result_large = PD.df_to_ordered_dicts(large_df, [:A, :B, :C])
     @test length(result_large) == 10000
   end
 end
