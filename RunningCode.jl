@@ -25,7 +25,7 @@ df = CSV.read(csv_filepath, DataFrame)
 # 2.1. Encryption by AES
 ids_vec = string.(df[!, :IDs])
 key = IC.generate_key()
-encrypted_df = PD.encrypt_input_data(df, ids_vec, key)
+encrypted_df = PD.encrypt_input_data(df, key)
 
 open("aes_key.bin", "w")do io  # Save the AES key to a file
   write(io, key.key)
@@ -61,7 +61,7 @@ df
 # `anonymized_df`.
 
 key_order = [:IDs, :Ans]
-yml_data = PD.df_to_yml(anonymized_df, key_order)
+yml_data = PD.df_to_ordered_dicts(anonymized_df, key_order)
 yml_string = YAML.yaml(yml_data)
 
 # 4. Setup Claude connection
