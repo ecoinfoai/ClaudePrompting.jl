@@ -9,6 +9,11 @@ using HTTP
 export set_anthropic_api_key, provide_yml_to_claude, yml_res_to_dataframe,
        process_sequential_batches
 
+"""
+    set_anthropic_api_key(filepath::String)
+
+Read the Anthropic API key from a file and set it in PromptingTools preferences.
+"""
 function set_anthropic_api_key(filepath::String)
   if isfile(filepath)
     api_key = strip(read(filepath, String))
@@ -19,6 +24,11 @@ function set_anthropic_api_key(filepath::String)
   end
 end
 
+"""
+    provide_yml_to_claude(yml_string::String, prompt::String)
+
+Send a prompt and YAML data to Claude API and return the response text.
+"""
 function provide_yml_to_claude(yml_string::String, prompt::String)
   api_key = PromptingTools.get_preferences("ANTHROPIC_API_KEY")
   headers = [
@@ -45,6 +55,11 @@ function provide_yml_to_claude(yml_string::String, prompt::String)
 
 end
 
+"""
+    yml_res_to_dataframe(yml_result::String, col_names::Vector{String})::DataFrame
+
+Convert a YAML result string to a DataFrame with specified column names.
+"""
 function yml_res_to_dataframe(
   yml_result::String, col_names::Vector{String}
 )::DataFrame
@@ -58,6 +73,11 @@ function yml_res_to_dataframe(
   return df
 end
 
+"""
+    process_sequential_batches(yml_string::String, prompt::String, batch_size::Int64=10)
+
+Process data in sequential batches by sending them to Claude API.
+"""
 function process_sequential_batches(
   yml_string::String, prompt::String, batch_size::Int64=10
 )

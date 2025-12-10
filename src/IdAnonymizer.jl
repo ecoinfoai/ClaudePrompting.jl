@@ -6,11 +6,17 @@ using Random
 using SHA
 
 export anonymize_ids, deanonymize_ids
+export compress_ids, restore_ids
 
 function get_id_digits(n::Int64)::Int64
   return length(string(n))
 end
 
+"""
+    anonymize_ids(df::DataFrame)
+
+Anonymize the IDs in the dataframe. Returns a tuple containing the anonymized dataframe and a dictionary mapping original IDs to anonymous IDs.
+"""
 function anonymize_ids(df::DataFrame)::Tuple{DataFrame,Dict{Int64,String}}
   shuffled_df = df[shuffle(1:nrow(df)), :]
   n = nrow(shuffled_df)
@@ -38,6 +44,18 @@ function anonymize_ids(df::DataFrame)::Tuple{DataFrame,Dict{Int64,String}}
   return anonymized_df, id_map
 end
 
+"""
+    compress_ids(df::DataFrame)
+
+Alias for `anonymize_ids`.
+"""
+const compress_ids = anonymize_ids
+
+"""
+    deanonymize_ids(df::DataFrame, id_map::Dict{Int64,String})
+
+Deanonymize the IDs in the dataframe using the provided ID map.
+"""
 function deanonymize_ids(
   df::DataFrame, id_map::Dict{Int64,String}
 )::DataFrame
@@ -48,5 +66,12 @@ function deanonymize_ids(
 
   return deanonymized_df
 end
+
+"""
+    restore_ids(df::DataFrame, id_map::Dict{Int64,String})
+
+Alias for `deanonymize_ids`.
+"""
+const restore_ids = deanonymize_ids
 
 end

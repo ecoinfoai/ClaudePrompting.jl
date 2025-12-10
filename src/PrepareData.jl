@@ -8,7 +8,13 @@ using OrderedCollections
 import ClaudePrompting.IdCipher as IC
 export encrypt_input_data, df_to_yml, check_incomplete_responses,
        check_duplicate_anonymous_ids
+export compress_input_data
 
+"""
+    encrypt_input_data(df::DataFrame, ids_vec::Vector{String}, key::AES.AES128Key)
+
+Encrypt the input data IDs using AES encryption.
+"""
 function encrypt_input_data(df::DataFrame, ids_vec::Vector{String}, key::AES.AES128Key)
   encrypted_ids = [IC.encrypt_id(id, key) for id in ids_vec]
   encrypted_df = copy(df)
@@ -17,6 +23,18 @@ function encrypt_input_data(df::DataFrame, ids_vec::Vector{String}, key::AES.AES
   return encrypted_df
 end
 
+"""
+    compress_input_data(df::DataFrame, ids_vec::Vector{String}, key::AES.AES128Key)
+
+Alias for `encrypt_input_data`.
+"""
+const compress_input_data = encrypt_input_data
+
+"""
+    df_to_yml(df::DataFrame, key_order::Vector{Symbol})::Vector{Any}
+
+Convert a DataFrame to a YAML-compatible structure (Vector of OrderedDictionaries).
+"""
 function df_to_yml(df::DataFrame, key_order::Vector{Symbol})::Vector{Any}
   yml_data = []
   for row in eachrow(df)
@@ -26,6 +44,11 @@ function df_to_yml(df::DataFrame, key_order::Vector{Symbol})::Vector{Any}
   return yml_data
 end
 
+"""
+    check_incomplete_responses(data::Vector{Dict{Any,Any}})::Dict{String,Vector{String}}
+
+Check for incomplete responses in the data. Returns a dictionary where keys are IDs and values are lists of missing fields.
+"""
 function check_incomplete_responses(
   data::Vector{Dict{Any,Any}}
 )::Dict{String,Vector{String}}
@@ -55,6 +78,11 @@ function check_incomplete_responses(
   return incomplete_responses
 end
 
+"""
+    check_duplicate_anonymous_ids(id_map::Dict{Int64,String})
+
+Check for duplicate anonymous IDs in the ID map. Prints the result to stdout.
+"""
 function check_duplicate_anonymous_ids(id_map::Dict{Int64,String})
   anonymous_ids = values(id_map)
   unique_ids = Set(anonymous_ids)

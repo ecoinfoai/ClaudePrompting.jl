@@ -10,5 +10,11 @@ Documentation for [ClaudePrompting](https://github.com/Kwang-Seuk/ClaudePromptin
 ```
 
 ```@autodocs
-Modules = [ClaudePrompting]
+Modules = [
+    ClaudePrompting,
+    ClaudePrompting.IdAnonymizer,
+    ClaudePrompting.PrepareData,
+    ClaudePrompting.IdCipher,
+    ClaudePrompting.CommunicateClaude
+]
 ```
